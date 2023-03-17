@@ -1,0 +1,12 @@
+/*
+  Style de la table qui affiche les données CSV
+*/
+table#table_csv {
+  margin-top:2em;
+  margin-left:2em;
+  cellpadding: 1em;
+}
+
+table#table_csv tr td {
+  padding: 0.2em 0.8em;
+}
