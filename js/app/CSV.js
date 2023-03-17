@@ -56,17 +56,33 @@ class CSV {
     |  L'entête
     */
     log("-> Préparation de l'entête")
+    const thead = DCreate('THEAD')
     const tr_header = DCreate('TR')
-    conteneur.appendChild(tr_header)
+    thead.appendChild(tr_header)
+    conteneur.appendChild(thead)
     this.columnNames.forEach( columnName => {
-      const td_column = DCreate('TH', {text: columnName})
+      const td_column = DCreate('TH')
+      const spanName    = DCreate('SPAN', {text: columnName, class:'name'})
+      const sortUpBtn   = DCreate('span', {text: '△', class:'btn'})
+      const sortDownBtn = DCreate('span', {text: '▽', class:'btn'})
+      td_column.appendChild(spanName)
+      td_column.appendChild(sortUpBtn)
+      td_column.appendChild(sortDownBtn)
       tr_header.appendChild(td_column)
+      /*
+      |  Observers
+      */
+      sortUpBtn.addEventListener('click', this.sort_rows.bind(this,columnName, 'up'))
+      sortDownBtn.addEventListener('click', this.sort_rows.bind(this,columnName, 'down'))
     })
     /*
     |  Afficher toutes les rangées
     */
     log("-> Affichage des rangées")
-    this.rows.forEach( row => row.display(conteneur) )
+    const tbody = DCreate('TBODY')
+    this.tbody = tbody
+    conteneur.appendChild(tbody)
+    this.rows.forEach( row => row.display(tbody) )
   }
 
   dispatchData(data){
@@ -85,4 +101,22 @@ class CSV {
     })
   }
 
+  /**
+  * Classement des rangées
+  * 
+  * @param [String] key La clé de classement (nom de la colonne)
+  */
+  sort_rows(key, dir){
+    const sorted = this.rows.sort(this.sortRowMethod.bind(this, key))
+    if ( dir == 'up' ) { sorted.reverse() }
+    sorted.forEach( row => this.tbody.appendChild(row.tr) )
+  }
+
+  sortRowMethod(key, a, b){
+    if ( a.get(key) > b.get(key) ) {
+      return -1
+    } else {
+      return 1
+    }
+  }
 }

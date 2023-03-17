@@ -4,8 +4,34 @@
 table#table_csv {
   margin-top:2em;
   margin-left:2em;
-  cellpadding: 1em;
+  border-spacing: 0 2px;
 }
+
+table thead th {
+
+}
+table thead th span.name {
+  margin-left:18px;
+}
+table thead th span.btn {
+  float:left;
+  vertical-align:middle;
+  font-size:10pt;
+}
+
+table tbody tr:nth-child(odd){
+  background-color: #DDEDFE;
+}
+table tbody tr:nth-child(even){
+  background-color: #F1F1F1; 
+}
+
+span.btn {
+  display:inline-block;
+  padding: 0 2px;
+  cursor:pointer;
+}
+
 
 table#table_csv tr td {
   padding: 0.2em 0.8em;
@@ -16,3 +42,4 @@ table#table_csv tr th {
   padding: 0.2em 0.8em; 
   text-align: left;
 }
+

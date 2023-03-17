@@ -84,6 +84,7 @@ end
 def load
   File.readlines(path).each do |line|
     line = line.strip
+    next if line.empty?
     if line.start_with?('#')
       treate_line_as_comment(line)
     else

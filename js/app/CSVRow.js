@@ -2,6 +2,11 @@
 
 class CSVRow {
 
+  static newId(){
+    this.lastId || (this.lastId = 0)
+    return ++ this.lastId
+  }
+
 
 //######################      INSTANCE      ######################
 
@@ -14,6 +19,7 @@ class CSVRow {
 constructor(csv, data){
   this.csv  = csv 
   this.data = data
+  this.id   = this.constructor.newId()
 }
 
 /**
@@ -23,7 +29,8 @@ constructor(csv, data){
 * 
 */
 display(conteneur){
-  const tr = DCreate('TR')
+  const tr = DCreate('TR', {id: `TR-${this.id}`})
+  this.tr = tr
   conteneur.appendChild(tr)
   this.data.forEach( cdata => {
     const td = DCreate('TD', {text: cdata})
@@ -31,4 +38,36 @@ display(conteneur){
   })
 }
 
+/**
+* @return la valeur de la colonne +columnName+ de la rangée
+*/
+get(columnName){
+  try {
+    return this.to_h[columnName].value
+  } catch(err) {
+    console.error(err)
+    console.error("Erreur survenue avec ", this)
+    console.error("Et la clé demandée : ", columnName)
+  }
 }
+
+/**
+* La rangée sous forme de table (dictionnaire), où les clés sont
+* les noms des colonnes et les valeurs les valeurs de cellule
+* 
+* La méthode #get(colonne) permet d'obtenir une valeur
+*/
+get to_h(){
+  if ( undefined == this._ashash) {
+    this._ashash = {}
+    for( var i in this.data ) {
+      var key = this.csv.columnNames[i]
+      var val = this.data[i]
+      Object.assign(this._ashash, {[key]: {value:val}})
+    }
+    // log("this._ashash = ", this._ashash)
+  }
+  return this._ashash
+}
+
+}//class CSVRow
