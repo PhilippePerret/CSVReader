@@ -52,6 +52,15 @@ get(columnName){
 }
 
 /**
+* Ajout de colonnes à la rangée (clés étrangères)
+*/
+addColumn(colName, colValue){
+  log("Ajout de colonne %s avec valeur : ", colName, colValue)
+  this.data.push(colValue)
+  Object.assign(this._ashash, {[colName]: {value: colValue}})
+}
+
+/**
 * La rangée sous forme de table (dictionnaire), où les clés sont
 * les noms des colonnes et les valeurs les valeurs de cellule
 * 

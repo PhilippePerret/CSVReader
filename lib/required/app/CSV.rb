@@ -112,9 +112,8 @@ def treate_line_as_comment(line)
   if ( found = line.match(@reg_foreign_key) )
     column_name = found[1]
     foreign_key = found[2].strip
-    csv_file    = found[3].strip
+    csv_file    = consigne_foreign_csv_file(found[3].strip)
     @header[column_name].merge!(foreign_key: foreign_key, csv_file: csv_file)
-    consigne_foreign_csv_file(csv_file)
   elsif ( found = line.match(@reg_def_column) )
     column_name = found[1]
     description = found[2].strip
@@ -176,6 +175,7 @@ def consigne_foreign_csv_file(file)
   end
   File.exist?(file) || raise("Fichier CSV introuvable : #{file}")
   foreign_csv_files << file
+  return file
 end
 
 def folder
