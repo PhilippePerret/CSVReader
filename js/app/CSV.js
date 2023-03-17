@@ -7,6 +7,15 @@ class CSV {
     WAA.send({class:'CSVFile', method:'getData', data:{csv_path:path}})
   }
 
+  /**
+  * Appelée au démarrage, cette méthode affiche la dernière table
+  * affichée ou celle définie dans le champ idoine.
+  */
+  static display_last_table(){
+    var path = DGet('#csv-file-1').value
+    WAA.send({class:'CSVFile', method:'getLastCSVFile', data:{csv_path_alt:path}})
+  }
+
 
   static onReceiveCSVData(data){
     // console.log("Données reçues : ", data)
@@ -14,7 +23,8 @@ class CSV {
     /*
     |  Dispatcher les données
     |
-    | On fait une instance CSV par fichier remonté
+    | On fait une instance CSV par fichier remonté, donc une instance
+    | par fichier CSV, par table.
     |
     */
     data.csv_data.forEach(dcsv => {
@@ -23,7 +33,7 @@ class CSV {
     })
 
     /*
-    |  Afficher les données CSV
+    |  Afficher les données CSV de la première table
     */
     this.csv_files[0].display()
   }
@@ -49,7 +59,7 @@ class CSV {
     const tr_header = DCreate('TR')
     conteneur.appendChild(tr_header)
     this.columnNames.forEach( columnName => {
-      const td_column = DCreate('TD', {text: columnName})
+      const td_column = DCreate('TH', {text: columnName})
       tr_header.appendChild(td_column)
     })
     /*

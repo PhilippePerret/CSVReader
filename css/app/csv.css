@@ -9,4 +9,10 @@ table#table_csv {
 
 table#table_csv tr td {
   padding: 0.2em 0.8em;
+  text-align: left;
+}
+
+table#table_csv tr th {
+  padding: 0.2em 0.8em; 
+  text-align: left;
 }

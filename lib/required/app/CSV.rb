@@ -9,13 +9,28 @@ class << self
     csv_data = @csv_files.map do |csv_file|
       csv_file.data
     end
+    #
+    # On indique que c'est la dernière table traitée
+    # 
+    set_last_table(data['csv_path'])
     # 
     # Renvoyer les données
     # 
     WAA.send(**{class:'CSV', method:'onReceiveCSVData', data:{csv_data: csv_data}})
   end
 
+  ##
+  # Méthode appelée par le serveur qui demande l'affichage de la
+  # dernière table ouverte (au démarrage) ou, le cas échouant, la
+  # table définie par data['csv_path_alt'] si elle est définie.
+  def getLastCSVFile(data)
+    last_csv = get_last_table || data['csv_path_alt']
+    getData({'csv_path' => last_csv}) if last_csv
+  end
+
   def treate_csv_file(path)
+    path || raise("Il faut définir le fichier CSV à afficher.")
+    File.exist?(path) || raise("Le fichier #{path.inspect} est introuvable.")
     @csv_files ||= []
     csv = CSVFile.new(path)
     csv.load
@@ -28,6 +43,22 @@ class << self
     end
   end
 
+  # 
+  # - Mémorisation de la dernière table -
+  # 
+  def set_last_table(csv_path)
+    File.write(last_table_path, csv_path)
+  end
+
+  def get_last_table
+    if File.exist?(last_table_path)
+      File.read(last_table_path)
+    end    
+  end
+
+  def last_table_path
+    @last_table_path ||= File.join(APP_FOLDER,'.last_table')
+  end
 end #<< self
 ###################       INSTANCE      ###################
 
