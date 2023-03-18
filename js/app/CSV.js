@@ -102,6 +102,10 @@ class CSV {
     this.tbody = tbody
     conteneur.appendChild(tbody)
     this.rows.forEach( row => row.display(tbody) )
+    /*
+    |  Nom dans l'entête
+    */
+    DGet('#csv-file-name').innerHTML = this.filename
   }
 
   /**
@@ -115,6 +119,7 @@ class CSV {
     this.header       = data.header
     this.raw_rows     = data.rows
     this.path         = data.path
+    this.filename     = this.path.split('/').pop()
   }
 
   instancie_rows(){
@@ -180,6 +185,7 @@ class CSV {
             |  Traitement spécial pour clé multiple : il faut ajouter
             |  des rangées
             */
+            App.show_explication_plus_en_exposant_de_id()
             const ids = foreignKeyValue.split('+')
             row.set(column.name, ids[0])
             finalRows.push(row)

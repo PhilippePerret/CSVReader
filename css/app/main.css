@@ -10,9 +10,21 @@ header {
   padding:0.5em;
 }
 
+header span#csv-file-name {
+  margin-left:2em;
+}
+
 div#ui-fields {
   width:80%;
 }
 div#ui-fields > input[type="text"] {
   width:50%;
 }
+
+.explication {
+  font-size:0.85em;
+  font-style:italic;
+  opacity:0.5;
+}
+.explication:hover {opacity:1}
+div.explication {padding:1em;}
