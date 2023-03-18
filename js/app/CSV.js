@@ -51,11 +51,20 @@ class CSV {
     return this.tablePerPath[path]
   }
 
+  /**
+  * Identifiant unique pour chaque table instanciée
+  */
+  static newId(){
+    this.lastId || (this.lastId = 0)
+    return ++ this.lastId
+  }
+
 //######################      INSTANCE      ######################
 
   constructor(data){
     log("INSTANCIATION", data)
     Log.info("Instanciation csv file")
+    this.id = this.constructor.newId()
     this.dispatchData(data)
     this.instancie_rows()
   }
@@ -151,6 +160,10 @@ class CSV {
           this.columnNames.push(cname)
         })
         /*
+        |  Pour nommer de façon unique les colonnes
+        */
+        const suffixForeignTable = `T${foreignTable.id}`
+        /*
         |  On ajoute les données à chaque rangée de cette table
         */
         this.rows.forEach(row => {
@@ -169,8 +182,16 @@ class CSV {
             */
             for(var col in foreignRow.to_h){
               // console.log("col = %s / fkey = %s",col, column.foreign_key)
+              /*
+              |  Si c'est la colonne de la clé étrangère, on passe
+              */
               if ( col == column.foreign_key) continue
-              row.addColumn(col, foreignRow.to_h[col].value)
+              /*
+              |  Ajout de la colonne à la donnée (en mettant un
+              |  nom de colonne unique)
+              */
+              var colname = `${suffixForeignTable}-${col}`
+              row.addColumn(colname, foreignRow.to_h[col].value)
             }
           } else {
             console.error("Bizarrement, la rangée étrangère est indéfinie pour :", this)

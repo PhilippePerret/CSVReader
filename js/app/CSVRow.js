@@ -7,6 +7,50 @@ class CSVRow {
     return ++ this.lastId
   }
 
+  /**
+  * @return [HTMLString] la valeur à afficher en fonction du
+  * nom de la colonne +colName+
+  */
+  static formated_value_for(colName, rdata){
+    switch(colName.toLowerCase()){
+    case 'sexe':
+      return rdata == 'H' ? '🧑🏻‍🦱' : '👩🏻‍🦰';
+    case 'date':
+      return this.formated_value_as_date(rdata);
+    default:
+      return rdata
+    }
+  }
+
+  static formated_value_as_date(str){
+    var delimitor;
+    if (str.indexOf('-') > -1) {
+      delimitor = '-'
+    } else if (str.indexOf('/') > -1 ) {
+      delimitor = '/'
+    } else if (str.indexOf(' ') > -1 ) {
+      delimitor = ' '
+    } else {
+      return str // pas de traitement
+    }
+    const ddate = str.split(delimitor)
+    if ( ddate[0].length == 4 ) {
+      /*
+      |  Date inversée
+      */
+      return ddate[2] + ' ' + MOIS[Number(ddate[1])].court + ' ' + ddate[0];
+    } else if ( ddate[2].length == 4 ) {
+      /*
+      |  Date dans l'ordre
+      */
+      return ddate[1] + ' ' + MOIS[Number(ddate[1])].court + ' ' + ddate[2];
+    } else {
+      /*
+      |  Format inconnu
+      */
+      return str
+    }
+  }
 
 //######################      INSTANCE      ######################
 
@@ -32,10 +76,19 @@ display(conteneur){
   const tr = DCreate('TR', {id: `TR-${this.id}`})
   this.tr = tr
   conteneur.appendChild(tr)
-  this.data.forEach( cdata => {
-    const td = DCreate('TD', {text: cdata})
+  // this.data.forEach( cdata => {
+  //   const td = DCreate('TD', {text: cdata})
+  //   tr.appendChild(td)
+  // })
+  /*
+  |  On utilise la table pour avoir le nom de la colonne et
+  |  pouvoir formater la donnée
+  */
+  for ( var col in this.to_h ) {
+    const cvalue = this.to_h[col].value
+    const td = DCreate('TD', {text: cvalue})
     tr.appendChild(td)
-  })
+  }
 }
 
 /**
@@ -65,14 +118,20 @@ addColumn(colName, colValue){
 * les noms des colonnes et les valeurs les valeurs de cellule
 * 
 * La méthode #get(colonne) permet d'obtenir une valeur
+* 
+* @note
+*   Cette méthode permet aussi de formater la valeur en fonction
+*   du nom de la colonne. Typiquement, si la colonne s'appelle 
+*   'Sexe' (insensible à la casse) alors la fonction remplace 'H'
+*   par 🧑🏻‍🦱 et 'F' par 👩🏻‍🦰
 */
 get to_h(){
   if ( undefined == this._ashash) {
     this._ashash = {}
     for( var i in this.data ) {
       var key = this.csv.columnNames[i]
-      var val = this.data[i]
-      Object.assign(this._ashash, {[key]: {value:val}})
+      var val = this.constructor.formated_value_for(key, this.data[i])
+      Object.assign(this._ashash, {[key]: {value:val, raw_value:this.data[i]}})
     }
     // log("this._ashash = ", this._ashash)
   }
