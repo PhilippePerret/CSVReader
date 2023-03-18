@@ -62,8 +62,6 @@ class CSV {
 //######################      INSTANCE      ######################
 
   constructor(data){
-    log("INSTANCIATION", data)
-    Log.info("Instanciation csv file")
     this.id = this.constructor.newId()
     this.dispatchData(data)
     this.instancie_rows()
@@ -137,7 +135,7 @@ class CSV {
   traite_foreign_keys(){
     Object.values(this.header).forEach( column => {
       if ( column.foreign_key ) {
-        log("Colonne étrangère : ", column)
+        // log("Colonne étrangère : ", column)
         /*
         |  Instanciation de la table qui contient les données
         |  étrangères.
@@ -153,7 +151,7 @@ class CSV {
         */
         foreignTable.columnNames.forEach(cname => {
           if (cname == column.foreign_key) return
-          log("Traitement de la colonne ", cname)
+          // log("Traitement de la colonne étrangère", cname)
           /*
           |  On ajoute cette colonne (nom)
           */
@@ -164,16 +162,46 @@ class CSV {
         */
         const suffixForeignTable = `T${foreignTable.id}`
         /*
-        |  On ajoute les données à chaque rangée de cette table
+        |
+        |  Parfois, une valeur de clé étrangère peut contenir 
+        |  plusieurs valeurs, reliées par des '+'. Par exemple, un
+        |  livre peut avoir été écrit par plusieurs auteurs. Dans ce
+        |  cas, chaque auteur a son Id dans la colonne 'Auteurs' du
+        |  livre (qui prend une valeur comme "12+25").
+        |  Ici, il faut créer autant de rangées que nécessaire. S'il 
+        |  y a deux auteurs, il faut ajouter une rangée
+        |
         */
+        const finalRows = [] // contiendra toutes les rangées
         this.rows.forEach(row => {
           var foreignKeyValue = row.get(column.name) // l'Id, souvent
           if ( foreignKeyValue.indexOf('+') > -1 ) {
             /*
-            |  Traitement spécial pour clé multiple
+            |  Traitement spécial pour clé multiple : il faut ajouter
+            |  des rangées
             */
-            foreignKeyValue = foreignKeyValue.split('+')[0]
+            const ids = foreignKeyValue.split('+')
+            row.set(column.name, ids[0])
+            finalRows.push(row)
+            for (var i = 1, len = ids.length; i < len; ++ i) {
+              const dupData = JSON.parse(JSON.stringify(row.data))
+              const newRow = new CSVRow(this, dupData)
+              newRow.set(column.name, ids[i], `${ids[i]}<sup>+</sup>`)
+              finalRows.push(newRow)
+            }
+          } else {
+            /*
+            |  Sinon, on ajoute simplement la rangée
+            */
+            finalRows.push(row)
           }
+        })
+        this.rows = finalRows // On la remet
+        /*
+        |  On ajoute les données à chaque rangée de cette table
+        */
+        this.rows.forEach(row => {
+          var foreignKeyValue = row.get(column.name) // l'Id, souvent
           const foreignRow = foreignTable.getRow(column.foreign_key, foreignKeyValue) // les données de la table étrangère
           // log("foreignRow = ", foreignRow)
           if ( foreignRow ) {            

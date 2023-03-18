@@ -92,11 +92,30 @@ display(conteneur){
 }
 
 /**
+* Définit la valeur de la colonne +columnName+ à +newValue+
+* Si +formatedValue+ est défini, ce sera la valeur affichée
+*/
+set(columnName, newValue, formatedValue){
+  try {
+    // La valeur brute, telle quelle
+    this.to_h[columnName].raw_value = newValue
+    // La valeur formatée en fonction du nom de colonne
+    if ( undefined == formatedValue ) {
+      formatedValue = this.constructor.formated_value_for(columnName,newValue)
+    }
+    this.to_h[columnName].value = formatedValue
+  } catch(err) {
+    console.error(err)
+    console.error("Erreur survenue avec ", this)
+    console.error("Et la clé demandée : ", columnName)
+  }
+}
+/**
 * @return la valeur de la colonne +columnName+ de la rangée
 */
 get(columnName){
   try {
-    return this.to_h[columnName].value
+    return this.to_h[columnName].raw_value
   } catch(err) {
     console.error(err)
     console.error("Erreur survenue avec ", this)
@@ -106,6 +125,9 @@ get(columnName){
 
 /**
 * Ajout de colonnes à la rangée (clés étrangères)
+* 
+* @note
+*   Ici, colValue est déjà traitée (formatée)
 */
 addColumn(colName, colValue){
   // log("Ajout de colonne %s avec valeur : ", colName, colValue)
