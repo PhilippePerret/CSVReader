@@ -2,6 +2,8 @@
 
 $(document).ready(e => {
   
+  Log.level = LOG_ALL
+  
   /*
   |  On affiche toujours la dernière table ouverte
   */

@@ -2,6 +2,16 @@
 
 class CSV {
 
+  /**
+  * Appelée par le bouton "Choisir…" de l'interface
+  * Pour choisir un fichier dans le finder et l'afficher
+  */
+  static chooseAndDisplayCSVFile(){
+    Finder.choose({types:['csv'], wantedType:'file'}).then(choix => {
+      log("Les choix sont : ", choix)
+    })
+  }
+
   static displayFile(){
     var path = DGet('#csv-file-1').value
     WAA.send({class:'CSVFile', method:'getData', data:{csv_path:path}})

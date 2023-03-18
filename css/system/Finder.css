@@ -1,0 +1,54 @@
+div.finder-window {
+  position:fixed;
+  top: 4em;
+  left: calc(50% - 300px);
+  width:600px;
+  box-shadow: 10px 10px 23.4px 2px #CCCCCC;
+  padding:1em;
+  background-color:white;
+}
+
+div.finder-window div.finder-window-select {
+  font-family: Arial Narrow, Arial, Helvetica;
+  font-size: 15pt;
+  max-height:500px;
+  height:500px;
+  min-height:500px;
+  overflow:auto;
+  padding: 0.5em 0;
+  border: 1px solid #CCC;
+}
+
+div.finder-window div.finder-window-buttons {
+  text-align: right;
+  padding: 1em 1em 0;
+  margin-top:1em;
+}
+
+div.finder-window div.finder-window-buttons button {
+  font-family: Arial, Helvetica;
+  font-size:13pt;
+  margin-left:1em;
+}
+
+div.finder-window button.btn-in-favoris {
+  float:left;
+  vertical-align:middle;
+}
+div.finder-window select.menu-favoris {
+  float:left;
+  min-width: 200px; 
+  max-width: 200px; 
+  vertical-align:middle;
+}
+
+button:disabled {
+  opacity:0.7;
+}
+
+div.finder-window div.option {
+  padding: 2px 1em;
+}
+div.finder-window div.option.selected {
+  background-color:#A2BDF1;
+}

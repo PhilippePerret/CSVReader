@@ -6,6 +6,7 @@
   <title>CSVReader</title>
   <link rel="stylesheet" type="text/css" href="css/app/main.css">
   <link rel="stylesheet" type="text/css" href="css/app/csv.css">
+  <link rel="stylesheet" type="text/css" href="css/system/Finder.css">
   <link rel="stylesheet" type="text/css" href="css/system/main.css">
   <link rel="stylesheet" type="text/css" href="js/system/jquery/jquery-ui.min.css">
   <link rel="stylesheet" type="text/css" href="js/system/jquery/jquery-jquery-ui.structure.min.css">
@@ -25,6 +26,7 @@
   <script type="text/javascript" src="js/system/WAA.js"></script>
   <script type="text/javascript" src="js/system/dom.js"></script>
   <script type="text/javascript" src="js/system/date.js"></script>
+  <script type="text/javascript" src="js/system/Finder.js"></script>
   <!-- <script type="text/javascript" src="js/system/Tooltip.js"></script> -->
   <script type="text/javascript" src="js/system/TableDisplay.js"></script>
   <script type="text/javascript" src="js/system/SelectionManager.js"></script>
@@ -40,6 +42,7 @@
 <div id="ui-fields">
   <input id="csv-file-1" type="text" placeholder="/path/to/file.csv" value="/Users/philippeperret/Library/Mobile Documents/com~apple~CloudDocs/ICARE_EDITIONS/Administration/DATA/M_Clients_suivi/Conservatoires_suivi.csv">
   <button onclick="CSV.displayFile()">Afficher</button>
+  <button onclick="CSV.chooseAndDisplayCSVFile.call(CSV)">Choisir…</button>
 </div>
 
 <div id="explication-plus-en-exposant-id" class="explication">Le petit « + » en exposant de certains Id indique que la rangée et celle avant (sans ce « + ») sont une seule donnée liée à plusieurs données étrangères.</div>
