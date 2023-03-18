@@ -34,8 +34,8 @@ function action(str){
   Message.showAction.call(Message, str)
 }
 
-function log(str, args){
-  console.log(str, args)
+function log(...args){
+  console.log(...args)
 }
 
 class MessageClass {

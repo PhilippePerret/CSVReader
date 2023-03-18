@@ -2,6 +2,13 @@ class CSVFile
 class << self
 
   def getData(data)
+    # 
+    # Reset
+    # 
+    @csv_files = []
+    # 
+    # On traite le fichier à charger (+ ses tables étrangères)
+    # 
     treate_csv_file(data['csv_path'])
     # 
     # Prendre tous les fichiers CSV définis
@@ -10,7 +17,9 @@ class << self
       csv_file.data
     end
     #
-    # On indique que c'est la dernière table traitée
+    # On indique que la dernière table traitée (que ce soit le dernier
+    # fichier ou celui donné par le serveur, il se trouve dans la clé
+    # 'csv_path')
     # 
     set_last_table(data['csv_path'])
     # 
@@ -31,7 +40,6 @@ class << self
   def treate_csv_file(path)
     path || raise("Il faut définir le fichier CSV à afficher.")
     File.exist?(path) || raise("Le fichier #{path.inspect} est introuvable.")
-    @csv_files ||= []
     csv = CSVFile.new(path)
     csv.load
     @csv_files << csv

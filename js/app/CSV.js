@@ -17,8 +17,8 @@ class CSV {
   }
 
 
-  static onReceiveCSVData(data){
-    // console.log("Données reçues : ", data)
+  static onReceiveCSVData(waaData){
+    // log("Données reçues : ", waaData)
     this.csv_files = []
     this.tablePerPath = {}
     /*
@@ -28,7 +28,7 @@ class CSV {
     | par fichier CSV, par table.
     |
     */
-    data.csv_data.forEach(dcsv => {
+    waaData.csv_data.forEach(dcsv => {
       const csv = new CSV(dcsv)
       this.csv_files.push(csv)
       Object.assign(this.tablePerPath, {[csv.path]: csv})
@@ -54,6 +54,8 @@ class CSV {
 //######################      INSTANCE      ######################
 
   constructor(data){
+    log("INSTANCIATION", data)
+    Log.info("Instanciation csv file")
     this.dispatchData(data)
     this.instancie_rows()
   }
@@ -62,13 +64,11 @@ class CSV {
     /*
     |  Préparer la table
     */
-    log("-> Préparation de la table")
     const conteneur = DCreate('TABLE', {id:'table_csv'})
     document.body.appendChild(conteneur)
     /*
     |  L'entête
     */
-    log("-> Préparation de l'entête")
     const thead = DCreate('THEAD')
     const tr_header = DCreate('TR')
     thead.appendChild(tr_header)
@@ -91,7 +91,6 @@ class CSV {
     /*
     |  Afficher toutes les rangées
     */
-    log("-> Affichage des rangées")
     const tbody = DCreate('TBODY')
     this.tbody = tbody
     conteneur.appendChild(tbody)
@@ -122,7 +121,7 @@ class CSV {
   }
 
   /**
-  * Traitement des clés étrangère
+  * Traitement des clés étrangères
   * 
   * En gros : on remplace leur colonne par des colonnes avec les données
   */
@@ -130,46 +129,54 @@ class CSV {
     Object.values(this.header).forEach( column => {
       if ( column.foreign_key ) {
         log("Colonne étrangère : ", column)
+        /*
+        |  Instanciation de la table qui contient les données
+        |  étrangères.
+        */
         const foreignTable = this.constructor.getByFile(column.csv_file)
         // log("Table étrangère : ", foreignTable)
         /*
         |  On doit supprimer la colonne +column+ et la remplacer par
         |  les colonnes de l'autre table (en injectant les données)
+        |  
+        |  Boucle sur chaque colonne de la table étrangère
+        |
         */
         foreignTable.columnNames.forEach(cname => {
           if (cname == column.foreign_key) return
+          log("Traitement de la colonne ", cname)
           /*
-          |  On ajoute la colonne (nom)
+          |  On ajoute cette colonne (nom)
           */
           this.columnNames.push(cname)
-          /*
-          |  On ajoute les données à chaque rangée de cette table
-          */
-          this.rows.forEach(row => {
-            var foreignKeyValue = row.get(column.name) // l'Id, souvent
-            if ( foreignKeyValue.indexOf('+') > -1 ) {
-              /*
-              |  Traitement spécial pour clé multiple
-              */
-              foreignKeyValue = foreignKeyValue.split('+')[0]
+        })
+        /*
+        |  On ajoute les données à chaque rangée de cette table
+        */
+        this.rows.forEach(row => {
+          var foreignKeyValue = row.get(column.name) // l'Id, souvent
+          if ( foreignKeyValue.indexOf('+') > -1 ) {
+            /*
+            |  Traitement spécial pour clé multiple
+            */
+            foreignKeyValue = foreignKeyValue.split('+')[0]
+          }
+          const foreignRow = foreignTable.getRow(column.foreign_key, foreignKeyValue) // les données de la table étrangère
+          // log("foreignRow = ", foreignRow)
+          if ( foreignRow ) {            
+            /*
+            |  On ajoute ces données à la rangée
+            */
+            for(var col in foreignRow.to_h){
+              // console.log("col = %s / fkey = %s",col, column.foreign_key)
+              if ( col == column.foreign_key) continue
+              row.addColumn(col, foreignRow.to_h[col].value)
             }
-            const foreignRow = foreignTable.getRow(column.foreign_key, foreignKeyValue) // les données de la table étrangère
-            // log("foreignRow = ", foreignRow)
-            if ( foreignRow ) {            
-              /*
-              |  On ajoute ces données à la rangée
-              */
-              for(var col in foreignRow.to_h){
-                // console.log("col = %s / fkey = %s",col, column.foreign_key)
-                if ( col == column.foreign_key) continue
-                row.addColumn(col, foreignRow.to_h[col].value)
-              }
-            } else {
-              console.error("Bizarrement, la rangée étrangère est indéfinie pour :", this)
-              console.error("Colonne : ", column)
-              console.error("Rangée : ", row)
-            }
-          })
+          } else {
+            console.error("Bizarrement, la rangée étrangère est indéfinie pour :", this)
+            console.error("Colonne : ", column)
+            console.error("Rangée : ", row)
+          }
         })
       }
     })
