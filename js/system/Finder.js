@@ -5,9 +5,16 @@
 * ------------
 * Pour interagir avec le Finder
 * 
-* La méthode principale est :
+* @usage
+* ------
 * 
-*     Finder.choose()
+*     Finder.choose(<options>)
+*     .then(finderElement => {
+*       // traitement du +finderElement+ choisi
+*       // finderElement.path contient le chemin d'accès à l'élément
+*       // cf. en bas de fichier pour voir l'instance
+*     })
+*     .catch(err => { // erreur ou renoncement })
 * 
 * … qui permet de choisir un élément dans le Finder
 * 
@@ -15,25 +22,67 @@
 * REQUIS
 *   - lib/system/Finder.rb
 *   - css/system/Finder.css
+* 
+* @autres_méthodes
+* ----------------
+* 
+*   Finder.peupleLastTen(<array de full-path>)
+* 
+*     Rempli le menu avec les 10 derniers paths utilisés par 
+*     l'application
+* 
+*   Finder.
 */
 class Finder {
+
+  /**
+  * @public
+  * 
+  * Méthode principale pour choisir un élément de Finder
+  * 
+  * @param [Hash] options Définition de la recherche
+  * @option options [Array<String>] types Liste des extensions acceptées
+  * @option options [String] wantedType Le type de l'élément attendu ('file', 'folder' ou 'both')
+  */
   static choose(options){
     return new Promise((ok,ko) => {
-      const finder = new Finder(ok, ko, options)
-      finder.getFinderFrom()
-      this.current = finder
+      this.current.init(ok, ko, options)
+      this.current.getFinderFrom()
     })
   }
 
   /**
-  * Retour du serveur avec les fichiers
+  * @public
+  * 
+  * Méthode qui met les 10 derniers paths choisis avec Finder.js,
+  * dans l'application courante, dans un menu pour les rechoisir
+  * 
+  * @param [Array<String>] last_ten Les x derniers paths
   */
-  static receiver(data){
-    this.current.receivedFromFinder(data)
+  static peupleLastTen(last_ten){
+    if ( ! last_ten ) return ;
+    this.current.peupleLastTen(last_ten)
   }
 
+  /**
+  * @private
+  */
+  static get current(){
+    if ( undefined == this._current ) {
+      this._current = new Finder()
+    }; return this._current
+  }
+
+  // /**
+  // * Retour du serveur avec les fichiers
+  // */
+  // static receiver(data){
+  //   this.current.receivedFromFinder(data)
+  // }
+
 //#################     INSTANCE      ####################
-  constructor(ok, ko, options){
+
+  init(ok, ko, options){
     this.ok = ok // méthode à appeler en cas de succès
     this.ko = ko // méthode à appeler en cas d'erreur
     this.options = options
@@ -46,7 +95,7 @@ class Finder {
   */
   displayFolder(path){
     this.options.fromPath = path
-    this.getFinderFrom(this.options)
+    this.getFinderFrom()
   }
 
   getFinderFrom(){
@@ -59,7 +108,10 @@ class Finder {
   /**
   * Affichage des données +data+
   * 
-  * @param [Array<Hash>] data Liste des éléments du Finder. Chaque élément est une table {:path, :filename, :type (folder/file)}
+  * @param [Hash] data    Table des données à afficher
+  * @option data [Array<Hash>]  elements  Liste des éléments du Finder. Chaque élément est une table {:path, :filename, :type (folder/file)}
+  * @option data [Array]        favoris   Liste des favoris
+  * @option data [String]       fromPath  Le chemin d'accès au dossier courant
   */
   display(data){
     this.div || this.build(data)
@@ -78,10 +130,15 @@ class Finder {
     this.div.addEventListener('click',this.onClick.bind(this))
     this.backpaths = DCreate('SELECT',{class:'finder-window-backpaths'})
     this.backpaths.addEventListener('change', this.onChooseBackpath.bind(this))
+    this.lasttens = DCreate('SELECT',{class:'finder-window-last_ten'})
+    this.lasttens.addEventListener('change', this.onChooseLastTen.bind(this))
+    const centerDiv = DCreate('CENTER')
+    centerDiv.appendChild(this.backpaths)
+    centerDiv.appendChild(this.lasttens)
+    this.div.appendChild(centerDiv)
     this.listing = DCreate('DIV', {class:'finder-window-select'})
-    this.divButtons = DCreate('DIV',{class:'finder-window-buttons'})
-    this.div.appendChild(this.backpaths)
     this.div.appendChild(this.listing)
+    this.divButtons = DCreate('DIV',{class:'finder-window-buttons'})
     this.div.appendChild(this.divButtons)
     document.body.appendChild(this.div)
     // - Boutons -
@@ -93,6 +150,10 @@ class Finder {
     this.boutonInFavoris.addEventListener('click', this.onClickAddInFavoris.bind(this))
     this.menuFavoris = DCreate('SELECT', {class:'menu-favoris'})
     this.menuFavoris.addEventListener('change', this.onChooseFavori.bind(this))
+    this.boutonCancel = DCreate('BUTTON', {text:'Annuler', class:'fleft'})
+    this.boutonCancel.addEventListener('click', this.onClickBoutonCancel.bind(this))
+    // - Ajouter tous les boutons -
+    this.divButtons.appendChild(this.boutonCancel)
     this.divButtons.appendChild(this.menuFavoris)
     this.divButtons.appendChild(this.boutonInFavoris)
     this.divButtons.appendChild(this.boutonOuvrir)
@@ -101,7 +162,8 @@ class Finder {
     this.hideBoutonOuvrir()
     this.hideBoutonInFavoris()
     this.favoris = data.favoris || []
-    this.peupleFavoris() 
+    this.peupleFavoris()
+    this.peupleLastTen(data.last_ten)
   }
 
   show(){
@@ -110,6 +172,34 @@ class Finder {
   hide(){
     this.div.classList.add('hidden')
   }
+
+  peupleLastTen(last_ten){
+    this.div || this.build({})
+    last_ten = last_ten || this.last_ten || []
+    this.lasttens.innerHTML = ''
+    this.lasttens.appendChild(DCreate('OPTION',{value:'', text:'Élément récent…'}))
+    last_ten.forEach( path => {
+      const dpath = path.split('/')
+      let short_path = [dpath.pop(),dpath.pop()].reverse().join('/')
+      const option = DCreate('OPTION',{value:path, text:short_path})
+      this.lasttens.appendChild(option)
+    })
+    this.last_ten = last_ten
+  }
+  onChooseLastTen(ev){
+    const path = this.lasttens.value
+    this.ok(path)
+    // - On remet toujours au-dessus -
+    this.lasttens.selectedIndex = 0
+    this.hide()
+    return stopEvent(ev)
+  }
+
+
+  /**
+  * 
+  * --- Méthodes d'Observers ---
+  */
 
   /**
   * Quand on clique dans la fenêtre, en dehors de tout
@@ -268,6 +358,12 @@ class Finder {
     const favori_path = this.menuFavoris.value
     this.menuFavoris.selectedIndex = 0 // remettre au premier (utile ?)
     this.displayFolder(favori_path)
+    return stopEvent(ev)
+  }
+
+  onClickBoutonCancel(ev){
+    this.hide()
+    this.ko()
     return stopEvent(ev)
   }
 }

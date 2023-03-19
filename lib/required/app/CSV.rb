@@ -2,20 +2,7 @@ class CSVFile
 class << self
 
   def getData(data)
-    # 
-    # Reset
-    # 
-    @csv_files = []
-    # 
-    # On traite le fichier à charger (+ ses tables étrangères)
-    # 
-    treate_csv_file(data['csv_path'])
-    # 
-    # Prendre tous les fichiers CSV définis
-    # 
-    csv_data = @csv_files.map do |csv_file|
-      csv_file.data
-    end
+    csv_data = getCSVData(data['csv_path'])
     #
     # On indique que la dernière table traitée (que ce soit le dernier
     # fichier ou celui donné par le serveur, il se trouve dans la clé
@@ -28,13 +15,41 @@ class << self
     WAA.send(**{class:'CSV', method:'onReceiveCSVData', data:{csv_data: csv_data}})
   end
 
+  # @return [Array<Hash>] Les données de la table de chemin +csv_path+
+  # ainsi que toutes les données de ses tables étrangères.
+  # 
+  # @param [String] csv_path Chemin d'accès au fichier CSV à afficher
+  def getCSVData(csv_path)
+    # 
+    # Reset
+    # 
+    @csv_files = []
+    # 
+    # On traite le fichier à charger (+ ses tables étrangères)
+    # 
+    treate_csv_file(csv_path)
+    # 
+    # Prendre tous les fichiers CSV définis
+    # Et retourner le résultat
+    # 
+    @csv_files.map do |csv_file|
+      csv_file.data
+    end
+  end
+
   ##
   # Méthode appelée par le serveur qui demande l'affichage de la
   # dernière table ouverte (au démarrage) ou, le cas échouant, la
   # table définie par data['csv_path_alt'] si elle est définie.
-  def getLastCSVFile(data)
-    last_csv = get_last_table || data['csv_path_alt']
-    getData({'csv_path' => last_csv}) if last_csv
+  # 
+  def loadLastState(data = nil)
+    last_csv = last_table ? getCSVData(last_table) : nil
+    WAA.send(**{class:'CSV', method:'onReturnLastState', data:{
+      ok: true,
+      csv_data: last_csv,
+      csv_path: last_table,     # Pour Finder.js
+      last_ten: last_ten_paths, # Pour Finder.js
+    }})
   end
 
   def treate_csv_file(path)
@@ -52,21 +67,51 @@ class << self
   end
 
   # 
-  # - Mémorisation de la dernière table -
+  # - Gestion de la dernière table affichée -
   # 
+  def last_table
+    @last_table ||= begin
+      if File.exist?(last_table_path)
+        File.read(last_table_path)
+      elsif File.exist?(last_ten_filepath)
+        # Quand le fichier de la dernière table a été détruit
+        # de force mais qu'il y a un fichier avec les 10 dernières
+        # tables
+        last_ten_paths.first
+      end
+    end
+  end
   def set_last_table(csv_path)
     File.write(last_table_path, csv_path)
+    add_in_last_ten(csv_path)
   end
-
-  def get_last_table
-    if File.exist?(last_table_path)
-      File.read(last_table_path)
-    end    
-  end
-
   def last_table_path
     @last_table_path ||= File.join(APP_FOLDER,'.last_table')
   end
+
+  #
+  # - Gestion des 10 dernières tables affichées -
+  # 
+  def last_ten_paths
+    @last_ten_paths ||= begin
+      if File.exist?(last_ten_filepath)
+        File.read(last_ten_filepath).split("\n").reject{|n|n.strip.empty?}
+      end
+    end
+  end
+  def add_in_last_ten(csv_path)
+    lten = last_ten_paths || []
+    lten.delete(csv_path) if lten.include?(csv_path)
+    lten.unshift(csv_path)
+    lten = lten[0...10] if lten.count > 10
+    File.write(last_ten_filepath, lten.join("\n"))
+  end
+  # @return [String] Chemin d'accès au fichier qui consigne les
+  # x dernières tables
+  def last_ten_filepath
+    @last_ten_filepath ||= File.join(APP_FOLDER,'.last_10_tables')
+  end
+
 end #<< self
 ###################       INSTANCE      ###################
 

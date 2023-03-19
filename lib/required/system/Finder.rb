@@ -51,7 +51,7 @@ class << self
     # 
     data.merge!({favoris: favoris})
 
-    WAA.send(**{class:'Finder',method:'receiver',data: data})
+    WAA.send(**{class:'Finder.current',method:'receivedFromFinder',data: data})
   end
 
 

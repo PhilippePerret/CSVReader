@@ -1,3 +1,7 @@
+/* Common classes */
+.fleft {float:left;}
+.hidden {display:none;}
+
 div.finder-window {
   position:fixed;
   top: 4em;
@@ -7,6 +11,15 @@ div.finder-window {
   padding:1em;
   background-color:white;
 }
+
+div.finder-window button,
+div.finder-window select,
+div.finder-window select option {
+  font-size:13pt;
+  font-family: Arial, Helvetica;
+  font-size:13pt;
+}
+
 
 div.finder-window div.finder-window-select {
   font-family: Arial Narrow, Arial, Helvetica;
@@ -18,6 +31,16 @@ div.finder-window div.finder-window-select {
   padding: 0.5em 0;
   border: 1px solid #CCC;
 }
+div.finder-window div.finder-window-select > div {
+  cursor: pointer;
+}
+
+div.finder-window select.finder-window-backpaths {
+  text-align: center;
+  width:200px;
+  max-width:200px;
+  min-width:200px;
+}
 
 div.finder-window div.finder-window-buttons {
   text-align: right;
@@ -26,8 +49,6 @@ div.finder-window div.finder-window-buttons {
 }
 
 div.finder-window div.finder-window-buttons button {
-  font-family: Arial, Helvetica;
-  font-size:13pt;
   margin-left:1em;
 }
 

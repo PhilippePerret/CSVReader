@@ -3,32 +3,57 @@
 class CSV {
 
   /**
-  * Appelée par le bouton "Choisir…" de l'interface
+  * Appelée par le bouton "Ouvrir…" de l'interface
   * Pour choisir un fichier dans le finder et l'afficher
   */
   static chooseAndDisplayCSVFile(){
-    Finder.choose({types:['csv'], wantedType:'file'}).then(choix => {
-      log("Les choix sont : ", choix)
-    })
+    Finder.choose({types:['csv'], wantedType:'file'})
+    .then(finderElement => {if ( finderElement ) { this.displayFile(finderElement.path)}})
+    .catch(err => log("Renoncement", err))
   }
 
-  static displayFile(){
-    var path = DGet('#csv-file-1').value
+  static displayFile(path){
     WAA.send({class:'CSVFile', method:'getData', data:{csv_path:path}})
   }
 
   /**
   * Appelée au démarrage, cette méthode affiche la dernière table
-  * affichée ou celle définie dans le champ idoine.
+  * affichée
   */
-  static display_last_table(){
-    var path = DGet('#csv-file-1').value
-    WAA.send({class:'CSVFile', method:'getLastCSVFile', data:{csv_path_alt:path}})
+  static loadLastState(){
+    WAA.send({class:'CSVFile', method:'loadLastState'})
+  }
+  /**
+  * @param [Hash] waa Données retournées par WAA
+  * @option waaData [Array] csv_data Données de la table à afficher
+  * @option waaData [String] csv_path Chemin d'accès à la dernière table à afficher
+  * @option waaData [Array<String>] last_ten Liste des 10 dernières tables affichées (chemin d'accès complet)
+  */
+  static onReturnLastState(waa){
+    if ( waa.ok ) {
+      if (waa.csv_path) {
+        /*
+        |  Si une dernière table existe
+        */
+        this.onReceiveCSVData({csv_data: waa.csv_data})
+        /*
+        |  Si la donnée des 10 dernières tables existe
+        */
+        Finder.peupleLastTen(waa.last_ten)
+      } else {
+        /*
+        |  Sinon on demande à la choisir (avec Finder.js)
+        */
+        this.chooseAndDisplayCSVFile()
+      }
+    } else {
+      erreur(waa.message)
+    }
   }
 
 
-  static onReceiveCSVData(waaData){
-    // log("Données reçues : ", waaData)
+  static onReceiveCSVData(tableData){
+    // log("Données reçues : ", tableData)
     this.csv_files = []
     this.tablePerPath = {}
     /*
@@ -38,7 +63,7 @@ class CSV {
     | par fichier CSV, par table.
     |
     */
-    waaData.csv_data.forEach(dcsv => {
+    tableData.csv_data.forEach(dcsv => {
       const csv = new CSV(dcsv)
       this.csv_files.push(csv)
       Object.assign(this.tablePerPath, {[csv.path]: csv})
