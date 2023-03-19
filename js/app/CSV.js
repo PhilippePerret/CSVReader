@@ -39,7 +39,7 @@ class CSV {
         /*
         |  Si la donnée des 10 dernières tables existe
         */
-        waa.last_ten && Finder.peupleLastTen(waa.last_ten)
+        waa.last_ten && Finder.current.peupleLastTen(waa.last_ten)
         /*
         |  On définit les favoris
         */

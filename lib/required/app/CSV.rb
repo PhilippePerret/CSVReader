@@ -47,9 +47,9 @@ class << self
     WAA.send(**{class:'CSV', method:'onReturnLastState', data:{
       ok: true,
       csv_data: last_csv,
-      csv_path: last_table,     # Pour Finder.js
-      last_ten: last_ten_paths, # Pour Finder.js
-      favoris:  Finder.favoris, # idem
+      csv_path: last_table,             # Pour Finder.js
+      last_ten: Finder.last_ten_paths,  # id.
+      favoris:  Finder.favoris,         # id.
     }})
   end
 
@@ -74,44 +74,23 @@ class << self
     @last_table ||= begin
       if File.exist?(last_table_path)
         File.read(last_table_path)
-      elsif File.exist?(last_ten_filepath)
+      elsif File.exist?(Finder.last_ten_filepath)
         # Quand le fichier de la dernière table a été détruit
         # de force mais qu'il y a un fichier avec les 10 dernières
         # tables
-        last_ten_paths.first
+        Finder.last_ten_paths.first
       end
     end
   end
   def set_last_table(csv_path)
     File.write(last_table_path, csv_path)
-    add_in_last_ten(csv_path)
+    Finder.add_in_last_ten(csv_path)
   end
   def last_table_path
     @last_table_path ||= File.join(APP_FOLDER,'.last_table')
   end
 
-  #
-  # - Gestion des 10 dernières tables affichées -
-  # 
-  def last_ten_paths
-    @last_ten_paths ||= begin
-      if File.exist?(last_ten_filepath)
-        File.read(last_ten_filepath).split("\n").reject{|n|n.strip.empty?}
-      end
-    end
-  end
-  def add_in_last_ten(csv_path)
-    lten = last_ten_paths || []
-    lten.delete(csv_path) if lten.include?(csv_path)
-    lten.unshift(csv_path)
-    lten = lten[0...10] if lten.count > 10
-    File.write(last_ten_filepath, lten.join("\n"))
-  end
-  # @return [String] Chemin d'accès au fichier qui consigne les
-  # x dernières tables
-  def last_ten_filepath
-    @last_ten_filepath ||= File.join(APP_FOLDER,'.last_10_tables')
-  end
+
 
 end #<< self
 ###################       INSTANCE      ###################

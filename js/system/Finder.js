@@ -172,11 +172,19 @@ class Finder {
     this.div.classList.add('hidden')
   }
 
+
+  /**
+  * --- Traitement des "last ten" ---
+  */
+  initMenuLastTen(){
+    this.lasttens.innerHTML = ''
+    this.lasttens.appendChild(DCreate('OPTION',{value:'', text:'Élément récent…'}))
+    this.lasttens.disabled = true
+  }
   peupleLastTen(last_ten){
     this.div || this.build({})
     last_ten = last_ten || this.last_ten || []
-    this.lasttens.innerHTML = ''
-    this.lasttens.appendChild(DCreate('OPTION',{value:'', text:'Élément récent…'}))
+    this.initMenuLastTen()
     last_ten.forEach( path => {
       const dpath = path.split('/')
       let short_path = [dpath.pop(),dpath.pop()].reverse().join('/')
@@ -184,14 +192,31 @@ class Finder {
       this.lasttens.appendChild(option)
     })
     this.last_ten = last_ten
+    if ( last_ten.length ) {
+      this.lasttens.disabled = false
+      this.lasttens.appendChild(DCreate('OPTION',{disabled:true,text:'________________________'}))
+      this.lasttens.appendChild(DCreate('OPTION',{value:'reset_all', text:'Initialiser le menu'}))      
+    }
   }
   onChooseLastTen(ev){
     const path = this.lasttens.value
-    this.ok(path)
-    // - On remet toujours au-dessus -
-    this.lasttens.selectedIndex = 0
-    this.hide()
-    return stopEvent(ev)
+    if ( path == 'reset_all' ) {
+      /*
+      |  Réinitialisation demandée
+      */
+      WAA.send({class:'Finder',method:'resetLastTens', data:'OK'})
+      this.last_ten = []
+      this.peupleLastTen()
+    } else {
+      /*
+      |  Choix d'un "last ten"
+      */
+      this.ok(path)
+      // - On remet toujours au-dessus -
+      this.lasttens.selectedIndex = 0
+      this.hide()
+      return stopEvent(ev)
+    }
   }
 
 
@@ -337,32 +362,46 @@ class Finder {
   }
   /* Pour vider les favoris de cette application */
   resetFavoris(){
-    Log.warn("Je dois apprendre à resetter les favoris")
+    this.initMenuFavoris()
+    WAA.send({class:'Finder',method:'reset_favoris', data:'OK'})
+  }
+  initMenuFavoris(){
     this.menuFavoris.disabled = true
+    this.menuFavoris.innerHTML = ''
+    this.menuFavoris.appendChild(DCreate('OPTION',{text:'Choisir…', value:''}))
   }
   /* Pour mettre les favoris dans le menu (à l'ouverture) */
   peupleFavoris(favs){
+    this.div || this.build({})
     if ( favs ) {
       this.favoris = favs
     } else if ( undefined == this.favoris ) {
       this.favoris = []
     }
-    this.menuFavoris.disabled = true
-    this.menuFavoris.appendChild(DCreate('OPTION',{text:'Choisir…', value:''}))
-    console.log("this.favoris = ", this.favoris)
-    this.favoris.forEach(dfavori => this.addFavori(dfavori))
+    this.initMenuFavoris()
+    this.favoris.forEach(dfavori => {
+      const option = DCreate('OPTION',{value:dfavori.path, text:dfavori.name})
+      this.menuFavoris.appendChild(option)
+    })
+    if ( this.favoris.length ) {
+      this.menuFavoris.appendChild(DCreate('OPTION',{disabled:true,text:'________________________'}))
+      this.menuFavoris.appendChild(DCreate('OPTION',{value:'reset_all',text:'Initialiser les favoris'}))
+      this.menuFavoris.disabled = false
+    }
   }
   /* Pour ajouter un favori */
   addFavori(dfavori){
-    const opt = DCreate('OPTION',{text: dfavori.name, value: dfavori.path})
     this.favoris.push(dfavori)
-    this.menuFavoris.appendChild(opt)
-    this.menuFavoris.disabled = false
+    this.peupleFavoris()
   }
   onChooseFavori(ev){
     const favori_path = this.menuFavoris.value
-    this.menuFavoris.selectedIndex = 0 // remettre au premier (utile ?)
-    this.displayFolder(favori_path)
+    if ( favori_path == 'reset_all') {
+      this.resetFavoris()
+    } else {    
+      this.menuFavoris.selectedIndex = 0 // remettre au premier (utile ?)
+      this.displayFolder(favori_path)
+    }
     return stopEvent(ev)
   }
 

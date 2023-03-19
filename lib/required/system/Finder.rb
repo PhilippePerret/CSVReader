@@ -54,6 +54,14 @@ class << self
     WAA.send(**{class:'Finder.current',method:'receivedFromFinder',data: data})
   end
 
+  ##
+  # Pour réinitialiser la liste des favoris
+  def reset_favoris(waa_data)
+    if File.exist?(favoris_path)
+      File.delete(favoris_path) 
+      @favoris = nil
+    end
+  end
 
   ##
   # Pour ajouter un favori à cette application
@@ -123,6 +131,43 @@ class << self
   def favoris_path
     @favoris_path ||= File.join(APP_FOLDER,'.finder_favoris')
   end
+
+
+  # 
+  # --- Gestion des récents (last tens) ---
+  # 
+
+  def last_ten_paths
+    @last_ten_paths ||= begin
+      if File.exist?(last_ten_filepath)
+        File.read(last_ten_filepath).split("\n").reject{|n|n.strip.empty?}
+      end
+    end
+  end
+  def add_in_last_ten(csv_path)
+    lten = last_ten_paths || []
+    lten.delete(csv_path) if lten.include?(csv_path)
+    lten.unshift(csv_path)
+    lten = lten[0...10] if lten.count > 10
+    File.write(last_ten_filepath, lten.join("\n"))
+  end
+
+  # @return [String] Chemin d'accès au fichier qui consigne les
+  # x dernières tables
+  def last_ten_filepath
+    @last_ten_filepath ||= File.join(APP_FOLDER,'.last_10_tables')
+  end
+
+  ##
+  # Pour réinitialiser les récents de l'application
+  def resetLastTens(waa_data)
+    File.delete(last_ten_filepath) if File.exist?(last_ten_filepath)
+    @last_ten_paths = nil
+  end
+
+
+
+  # --- Méthodes Path utiles ---
 
   def icloud_path
     # @icloud_path ||= File.expand_path('~/Library/Mobile Documents')
