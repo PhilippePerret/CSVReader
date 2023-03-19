@@ -161,8 +161,7 @@ class Finder {
     this.hideBoutonChoisir()
     this.hideBoutonOuvrir()
     this.hideBoutonInFavoris()
-    this.favoris = data.favoris || []
-    this.peupleFavoris()
+    this.peupleFavoris(data.favoris)
     this.peupleLastTen(data.last_ten)
   }
 
@@ -232,7 +231,7 @@ class Finder {
   setBackpath(path){
     var chemin = path.split('/')
     // on retire le dernier, qui est le fichier
-    chemin.pop()
+    // chemin.pop()
     // on retire le premier, qui est vide
     chemin.shift()
     // Le nombre (utile pour reconstituer le chemin)
@@ -342,9 +341,15 @@ class Finder {
     this.menuFavoris.disabled = true
   }
   /* Pour mettre les favoris dans le menu (à l'ouverture) */
-  peupleFavoris(){
+  peupleFavoris(favs){
+    if ( favs ) {
+      this.favoris = favs
+    } else if ( undefined == this.favoris ) {
+      this.favoris = []
+    }
     this.menuFavoris.disabled = true
     this.menuFavoris.appendChild(DCreate('OPTION',{text:'Choisir…', value:''}))
+    console.log("this.favoris = ", this.favoris)
     this.favoris.forEach(dfavori => this.addFavori(dfavori))
   }
   /* Pour ajouter un favori */

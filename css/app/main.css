@@ -17,8 +17,15 @@ header span#csv-file-name {
 div#ui-fields {
   width:80%;
 }
-div#ui-fields > input[type="text"] {
-  width:50%;
+div#ui-fields {
+  position:fixed;
+  text-align:right;
+  bottom:0;
+  width:100%;
+}
+div#ui-fields button {
+  font-size: 20pt;
+  padding: 0.2em 1em;
 }
 
 .explication {
@@ -28,3 +35,6 @@ div#ui-fields > input[type="text"] {
 }
 .explication:hover {opacity:1}
 div.explication {padding:1em;}
+
+.fright {float:right;}
+.fleft {float:left;}

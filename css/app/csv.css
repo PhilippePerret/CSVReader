@@ -1,9 +1,22 @@
 /*
-  Style de la table qui affiche les données CSV
+  Conteneur d'une table
 */
-table#table_csv {
+div.table-csv-conteneur {
   margin-top:2em;
   margin-left:2em;
+  display:inline-block;
+  width:auto;
+}
+
+div.table-csv-conteneur div.table-path {
+  font-size:12pt;
+  font-style: italic;
+  font-family:Courier New;
+}
+/*
+  Style de la table qui affiche les données CSV
+*/
+table.table_csv {
   border-spacing: 0 2px;
 }
 
@@ -33,12 +46,12 @@ span.btn {
 }
 
 
-table#table_csv tr td {
+table.table_csv tr td {
   padding: 0.2em 0.8em;
   text-align: left;
 }
 
-table#table_csv tr th {
+table.table_csv tr th {
   padding: 0.2em 0.8em; 
   text-align: left;
 }

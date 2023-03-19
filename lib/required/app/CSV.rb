@@ -49,6 +49,7 @@ class << self
       csv_data: last_csv,
       csv_path: last_table,     # Pour Finder.js
       last_ten: last_ten_paths, # Pour Finder.js
+      favoris:  Finder.favoris, # idem
     }})
   end
 

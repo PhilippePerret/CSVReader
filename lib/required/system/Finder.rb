@@ -8,7 +8,7 @@ class << self
 
   def get(options)
 
-    puts "options = #{options.inspect}"
+    # puts "options = #{options.inspect}"
     fromPath = options['fromPath'] || File.expand_path('~')
 
     # 

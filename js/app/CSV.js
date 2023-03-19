@@ -39,7 +39,11 @@ class CSV {
         /*
         |  Si la donnée des 10 dernières tables existe
         */
-        Finder.peupleLastTen(waa.last_ten)
+        waa.last_ten && Finder.peupleLastTen(waa.last_ten)
+        /*
+        |  On définit les favoris
+        */
+        waa.favoris && Finder.current.peupleFavoris(waa.favoris)
       } else {
         /*
         |  Sinon on demande à la choisir (avec Finder.js)
@@ -102,19 +106,47 @@ class CSV {
     this.instancie_rows()
   }
 
+  remove(ev){
+    this.conteneur.remove()
+    return stopEvent(ev)
+  }
+
   display(options) {
     /*
-    |  Préparer la table
+    |  Le conteneur
     */
-    const conteneur = DCreate('TABLE', {id:'table_csv'})
+    const conteneur = DCreate('DIV',{class:'table-csv-conteneur'})
+    $(conteneur).draggable()
     document.body.appendChild(conteneur)
+    this.conteneur = conteneur
+    /*
+    |  Entête du conteneur
+    */
+    const header = DCreate('DIV', {class:'table-csv-conteneur-header'})
+    const btnClose = DCreate('BUTTON',{text:'❌', class:'fright'})
+    btnClose.addEventListener('click', this.remove.bind(this))
+    header.appendChild(btnClose)
+    /*
+    |  Footer du conteneur
+    */
+    const footer = DCreate('DIV', {class:'table-csv-conteneur-footer'})
+    this.divPath = DCreate('DIV', {class:'table-path', text:this.path})
+    footer.appendChild(this.divPath)
+    /*
+    |  Préparer la table d'affichage des données
+    */
+    const table = DCreate('TABLE', {class:'table_csv'})
+    conteneur.appendChild(header)
+    conteneur.appendChild(table)
+    conteneur.appendChild(footer)
+
     /*
     |  L'entête
     */
     const thead = DCreate('THEAD')
     const tr_header = DCreate('TR')
     thead.appendChild(tr_header)
-    conteneur.appendChild(thead)
+    table.appendChild(thead)
     this.columnNames.forEach( columnName => {
       const td_column = DCreate('TH')
       const spanName    = DCreate('SPAN', {text: columnName, class:'name'})
@@ -135,12 +167,8 @@ class CSV {
     */
     const tbody = DCreate('TBODY')
     this.tbody = tbody
-    conteneur.appendChild(tbody)
+    table.appendChild(tbody)
     this.rows.forEach( row => row.display(tbody) )
-    /*
-    |  Nom dans l'entête
-    */
-    DGet('#csv-file-name').innerHTML = this.filename
   }
 
   /**
